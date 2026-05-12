@@ -1,0 +1,72 @@
+df_id: df-publishing-orchestrator
+df_name: Buecher-Trilogie-Publishing-Orchestrator
+welle_introduced: welle-44
+type: foundation-df
+crux-mk: true
+k0_touch: false
+q0_touch: false
+phronesis_required: false
+cascade_isolation: hard
+failure_blast_radius: 4   # 4 book-DFs koennen via this orchestrator betroffen sein
+dependency_dlq_strategy: separate
+output_feeds_into_training: false
+provenance_required_in_output: true
+non_llm_validation_layer: true
+external_anchor_type: drive_filesystem
+external_anchor_validation_frequency: per-run
+pre_action_domain_check: true
+pre_action_backup_check: false
+pre_action_blast_radius_check: true
+override_complexity: single_command
+override_documentation_freshness_days: 30
+martin_review_cadence: monthly
+bus_factor_handover_drilled: false
+entropy_added_loc_estimate: 1000
+entropy_added_concepts:
+  - graphity-verlag-connector-stub
+  - vg-wort-tracker-stub
+  - metis-reform-compliance
+  - publishing-orchestrator
+entropy_justified_by_rho: high
+entropy_subtractive_potential: false
+concurrent_spawn_protection: both
+lock_dir: /tmp/df-publishing-orchestrator.lock
+lock_stale_age_h: 6
+engine_pgrep_check: true
+lock_release_on: EXIT_INT_TERM
+pipeline_cost_estimate_required: true
+cost_estimate_method: static_pre_run
+quota_budget_ceiling: 4   # 4 book-DFs
+cost_overrun_action: warn
+lose_coupling:
+  LC1_graceful_degradation:
+    degradation_modes: [full, degraded_no_verlag_api, sandbox_mock]
+    degradation_test_required: true
+  LC2_direct_mode:
+    direct_mode_available: true
+    direct_mode_capability: 0.6
+    direct_mode_trigger: "verlag-api unreachable >60s OR ENV not set"
+  LC3_circuit_breaker:
+    circuit_breaker_timeout_s: 60
+    circuit_breaker_open_threshold: 3
+    circuit_breaker_half_open_test_interval_s: 600
+  LC4_failure_isolation:
+    state_externalization: true
+    idempotent_operations: true
+    dependency_dlq_separate: true
+  LC5_health_check:
+    health_check_dependencies: []
+    health_check_degraded_score: 0.6
+    health_check_endpoint_or_file: "branch-hub/state/df-publishing-orchestrator-health.json"
+env_vars:
+  DF_PUBLISHING_REAL_ENABLED:
+    default: "false"
+    activation: "phronesis_ticket_required"
+  PHRONESIS_TICKET:
+    default: ""
+    required_when: "DF_PUBLISHING_REAL_ENABLED=true"
+publishing_metadata:
+  books_count: 4
+  publisher: "Graphity"
+  vg_wort_tracking: true
+  metis_reform_compliant: true
