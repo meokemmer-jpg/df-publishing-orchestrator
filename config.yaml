@@ -6,6 +6,23 @@ crux-mk: true
 k0_touch: false
 q0_touch: false
 phronesis_required: false
+
+# === Default-Action (per ausreden-schutz.md Schicht 2, Welle-47 Migration Batch-1) ===
+# Substitutes graphity-verlag scope (manages 4 books: Symbiotic Minds + AI Leadership + Mathematik der Macht + Souveraene Maschine + Graphity-VG-Wort-Tracking + METIS-Reform-Compliance)
+default_action:
+  description: "Orchestriert 4 Buch-Writer-DFs (Symbiotic-Minds + AI-Leadership + Mathematik-der-Macht + Souveraene-Maschine) inkl. Graphity-Verlag-Pipeline + VG-Wort-Tracking + METIS-Reform-Compliance-Check"
+  rho_per_run_eur: 30
+  rho_validation_source: unvalidated
+  block_gates:
+    - gate_id: K11
+      block_reason: "Cascade-Isolation: failure_blast_radius=4 (max 4 Book-DFs betroffen), separate DLQ pro Book-DF"
+      false_block_cost_eur: 25
+      legitimate_block_condition: "Multi-Book-Failure detected (>=2 Book-DFs concurrent fail) - cascade-isolation aktivieren"
+    - gate_id: K15
+      block_reason: "Pipeline-Cost-Estimate Pflicht: max quota_budget_ceiling pro Book pro Run"
+      false_block_cost_eur: 15
+      legitimate_block_condition: "Cost-Estimate > Quota-Budget ueber alle 4 Books"
+  graceful_degradation_path: "Sandbox-Mock-Mode (kein Real-LLM, kein VG-Wort-API-Call) bei DF_PUBLISHING_REAL_ENABLED=false ODER all-book-llms-unreachable"
 cascade_isolation: hard
 failure_blast_radius: 4   # 4 book-DFs koennen via this orchestrator betroffen sein
 dependency_dlq_strategy: separate
