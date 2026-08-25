@@ -16,3 +16,10 @@ secret_*
 .idea/
 *.swp
 .DS_Store
+.env
+*.db
+*.sqlite
+*.sqlite3
+*.pem
+secrets.json
+credentials.json
