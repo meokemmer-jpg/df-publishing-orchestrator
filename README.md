@@ -8,6 +8,8 @@ Orchestriert die 4 Buecher-Trilogie-Foundation-DFs (Symbiotic Minds + AI Leaders
 Mathematik der Macht + Souveraene Maschine). Koppelt mit Graphity-Verlag (VG-Wort-Royalties +
 METIS-Reform-Compliance).
 
+> **TITEL-VERMERK (2026-09-10):** "Mathematik der Macht" ist Arbeitstitel; die Umbenennung ist beschlossen (Martin, Frage 29 = A). Fuer diesen Titel gilt bis zur Titel-Entscheidung eine Publikations-Sperre: keine ISBN-Anmeldung, keine VLB-Registrierung, kein Satz, keine Druckdaten, keine Vermarktungs-Ausgabe.
+
 ## Module
 
 - `graphity_verlag_connector.py`: Verlag-Coupling-Stub (kein Real-API in Skeleton)

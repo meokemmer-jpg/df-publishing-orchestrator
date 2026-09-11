@@ -231,8 +231,11 @@ BUECHER_TRILOGIE_REGISTRY: List[Dict] = [
      "subtitle": "Mensch-AI-Symbiose", "chapters": 14, "words_per_chapter": 8000},
     {"id": "ai-leadership", "title": "AI Leadership",
      "subtitle": "Fuehrung in AI-First-Unternehmen", "chapters": 12, "words_per_chapter": 6000},
+    # TITEL-VERMERK 2026-09-10: "Mathematik der Macht" wird umbenannt (Kollision Taschner/Zsolnay ISBN 978-3-552-07389-0). Neuer Titel offen.
     {"id": "mathematik-der-macht", "title": "Mathematik der Macht",
-     "subtitle": "Hamilton-Optimierung", "chapters": 16, "words_per_chapter": 9000},
+     "subtitle": "Hamilton-Optimierung", "chapters": 16, "words_per_chapter": 9000,
+     "working_title": True, "publication_blocked": True,
+     "title_note": "Arbeitstitel — Umbenennung beschlossen (Martin 2026-09-10, Frage 29=A). Keine ISBN-Anmeldung/VLB/Satz unter diesem Titel."},
     {"id": "souveraene-maschine", "title": "Die Souveraene Maschine",
      "subtitle": "K_0-AI als Werkzeug", "chapters": 10, "words_per_chapter": 7000},
 ]
@@ -284,11 +287,28 @@ class PublishingOrchestrator:
 
         submissions, royalty_total, metis_failures = 0, 0.0, 0
 
+        blocked_count = 0
+        processed_count = 0
         for book in self.books:
+            # PUBLIKATIONS-SPERRE (Martin 2026-09-10, Frage 29=A): ein Buch mit
+            # publication_blocked=True wird NICHT eingereicht. Der Titel "Mathematik der
+            # Macht" kollidiert mit Taschner/Zsolnay (ISBN 978-3-552-07389-0); bis ein
+            # neuer Titel feststeht, darf weder Satz noch ISBN-Anmeldung noch Submission
+            # laufen. Vorher stand hier nur ein Kommentar — die Sperre war wirkungslos.
+            if book.get("publication_blocked"):
+                blocked_count += 1
+                self.audit.append("book_publication_blocked", {
+                    "book_id": book.get("id"), "book_title": book.get("title"),
+                    "grund": book.get("title_note", "publication_blocked=True"),
+                    "quelle": "DC-MARTIN-ANTWORTEN-52-FRAGEN-2026-09-10.md Frage 29",
+                    "iso_timestamp": _iso_now()})
+                continue
+            processed_count += 1
             total_words = book["chapters"] * book["words_per_chapter"]
             book_meta = {
                 "book_title": book["title"],
                 "author": "Martin Kemmer",
+                # Gesperrte Buecher erreichen diese Stelle nicht mehr (siehe Sperre oben).
                 "isbn": "TBD",
                 "word_count": total_words,
                 "publication_date": "TBD-2027",
@@ -319,15 +339,17 @@ class PublishingOrchestrator:
                 "metis_compliant": royalty.metis_compliant})
             royalty_total += royalty.estimated_eur
 
+        self.audit.append("orchestration_blocked_summary", {"blocked": blocked_count})
         self.audit.append("orchestration_complete", {
-            "books_processed": len(self.books),
+            "books_processed": processed_count,   # gemessen, nicht len(Registry)
+            "books_blocked": blocked_count,
             "submissions": submissions,
             "royalty_total_eur": royalty_total,
             "metis_failures": metis_failures})
 
         return OrchestrationResult(
             iso_started=iso_start, iso_completed=_iso_now(),
-            books_processed=len(self.books), submissions_count=submissions,
+            books_processed=processed_count, submissions_count=submissions,
             royalty_estimates_eur_total=royalty_total,
             metis_failures=metis_failures,
             source_mode=source_mode, audit_log_path=str(self.audit.log_path))

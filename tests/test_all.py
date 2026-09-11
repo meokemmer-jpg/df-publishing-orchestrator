@@ -190,7 +190,12 @@ def test_orchestrator_process_all_books_mock():
             os.environ.pop("DF_PUBLISHING_REAL_ENABLED", None)
             o = PublishingOrchestrator(audit_log_dir=Path(tmp))
             result = o.process_all_books()
-            assert result.books_processed == 4
-            assert result.submissions_count == 4
+            # 2026-09-10: Publikations-Sperre (Martin, Frage 29=A) — ein Buch wird
+            # uebersprungen. books_processed zaehlt seither die GELEISTETE Arbeit,
+            # nicht die Registry-Laenge. Siehe tests/test_publication_sperre.py
+            offen = len([b for b in BUECHER_TRILOGIE_REGISTRY
+                         if not b.get('publication_blocked')])
+            assert result.books_processed == offen
+            assert result.submissions_count == offen
             assert result.source_mode == "mock"
             assert result.royalty_estimates_eur_total > 0
